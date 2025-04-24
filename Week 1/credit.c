@@ -1,23 +1,21 @@
 #include <cs50.h>
-#include <stdio.h>
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 
-enum Type {
-    Mastercard,
-    VISA,
-    American_Express,
-    Default
-};
+enum Type { Mastercard, VISA, American_Express, Default };
 
-struct Card{
+struct Card
+{
     enum Type type;
     long long number;
 };
 
-string printType(enum Type type){
+string printType(enum Type type)
+{
     string t;
-    switch (type){
+    switch (type)
+    {
         case American_Express:
             t = "AMEX";
             break;
@@ -30,26 +28,24 @@ string printType(enum Type type){
         default:
             t = "INVALID";
             break;
-
     }
     return t;
 }
 
+int getNumberLength(long long num)
+{
 
-int getNumberLength(long long num) {
-
-    if (num == 0) return 1;
+    if (num == 0)
+        return 1;
     int length = 0;
-    unsigned long long n = (num < 0) ? (unsigned long long)llabs(num) : (unsigned long long)num;
-    while (n > 0) {
+    unsigned long long n = (num < 0) ? (unsigned long long) llabs(num) : (unsigned long long) num;
+    while (n > 0)
+    {
         n /= 10;
         length++;
     }
     return length;
 }
-
-int
-
 
 // long long calculateChecksum(long long number){
 //     int nDigits = getNumberLength(number);
@@ -85,18 +81,23 @@ int
 //     return firstSum + secondSum;
 // }
 
-long long calculateChecksum(long long number) {
+long long calculateChecksum(long long number)
+{
     int total = 0;
     bool every_other = false;
     // process from last digit up
-    while (number > 0) {
+    while (number > 0)
+    {
         int digit = number % 10;
         number /= 10;
-        if (every_other) {
+        if (every_other)
+        {
             int prod = digit * 2;
             // sum digits of prod:
             total += (prod / 10) + (prod % 10);
-        } else {
+        }
+        else
+        {
             total += digit;
         }
         every_other = !every_other;
@@ -104,44 +105,46 @@ long long calculateChecksum(long long number) {
     return total;
 }
 
-
-
-
-
-
-bool isCardValid(struct Card* card){
+bool isCardValid(struct Card *card)
+{
     long long num = card->number;
 
     long long nDigits = getNumberLength(num);
 
-    if (nDigits == 15){
+    if (nDigits == 15)
+    {
         card->type = American_Express;
     }
-    else if (nDigits == 13){
+    else if (nDigits == 13)
+    {
         card->type = VISA;
     }
-
-
 
     int frontDigit = num / pow(10, nDigits - 1);
     int twoFrontDigits = num / pow(10, nDigits - 2);
 
-    switch (card->type){
+    switch (card->type)
+    {
         case American_Express:
-            if ((twoFrontDigits != 34) && (twoFrontDigits != 37)) return false;
+            if ((twoFrontDigits != 34) && (twoFrontDigits != 37))
+                return false;
             break;
         case VISA:
-            if (frontDigit != 4) return false;
+            if (frontDigit != 4)
+                return false;
             break;
         case Mastercard:
-            if ((twoFrontDigits < 51) || (twoFrontDigits > 55)) return false;
+            if ((twoFrontDigits < 51) || (twoFrontDigits > 55))
+                return false;
             break;
         case Default:
-            if (((nDigits == 13) || (nDigits == 16)) && (frontDigit == 4)){
+            if (((nDigits == 13) || (nDigits == 16)) && (frontDigit == 4))
+            {
                 card->type = VISA;
                 return true;
             }
-            if ((nDigits == 16) && ((twoFrontDigits >= 51) && (twoFrontDigits <= 55))){
+            if ((nDigits == 16) && ((twoFrontDigits >= 51) && (twoFrontDigits <= 55)))
+            {
                 card->type = Mastercard;
                 return true;
             }
@@ -149,13 +152,10 @@ bool isCardValid(struct Card* card){
         default:
             return false;
             break;
-
     }
 
     return true;
 }
-
-
 
 int main()
 {
@@ -165,22 +165,27 @@ int main()
     card.number = number;
     card.type = Default;
 
+    // while (!isCardValid(&card))
+    // {
+    //     number = get_long_long("Number: ");
+    //     card.number = number;
+    // }
 
-    while (!isCardValid(&card))
+    if (isCardValid(&card))
     {
-        number = get_long_long("Number: ");
-        card.number = number;
+        long long c = calculateChecksum(number);
+
+        if ((c % 10) == 0)
+        {
+            printf("%s\n", printType(card.type));
+        }
+        else
+        {
+            printf("INVALID\n");
+        }
     }
-
-
-    long long c = calculateChecksum(number);
-
-
-    if ((c% 10) == 0 ){
-        printf("%s\n", printType(card.type));
-    }else{
+    else
+    {
         printf("INVALID\n");
     }
-
-
 }
